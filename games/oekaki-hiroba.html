@@ -356,7 +356,7 @@
 
   <div class="toolbar" role="toolbar" aria-label="どうぐ">
     <button type="button" class="menu-btn" data-popup-open="popupColors">🎨 いろ</button>
-    <button type="button" class="menu-btn" data-popup-open="popupSizes">🖌️ ふとさ</button>
+    <button type="button" class="menu-btn" data-popup-open="popupSizes">🖌️ タッチ</button>
     <button type="button" class="action-btn action-clear" id="btnClear">ぜんぶ けす</button>
     <button type="button" class="action-btn action-chaos" id="btnYaminabe">やみなべ</button>
     <button type="button" class="menu-btn" data-popup-open="popupTemplates">🖼️ テンプレート</button>
@@ -382,14 +382,15 @@
     </div>
   </div>
 
-  <div id="popupSizes" class="popup" role="dialog" aria-label="ふとさ">
+  <div id="popupSizes" class="popup" role="dialog" aria-label="タッチ">
     <div class="popup-card">
-      <div class="popup-head"><p class="popup-title">ふとさ</p><button type="button" class="popup-close" data-popup-close>とじる</button></div>
+      <div class="popup-head"><p class="popup-title">えがきタッチ</p><button type="button" class="popup-close" data-popup-close>とじる</button></div>
       <div class="popup-body">
-        <button type="button" class="size-btn" data-w="4">ちいさい</button>
-        <button type="button" class="size-btn on" data-w="10">ふつう</button>
-        <button type="button" class="size-btn" data-w="22">おおきい</button>
-        <button type="button" class="size-btn" data-w="34">ごんぶと</button>
+        <button type="button" class="size-btn" data-kind="pencil" data-w="4">えんぴつ</button>
+        <button type="button" class="size-btn on" data-kind="pen" data-w="10">ペン</button>
+        <button type="button" class="size-btn" data-kind="brush" data-w="18">ふで</button>
+        <button type="button" class="size-btn" data-kind="crayon" data-w="22">クレヨン</button>
+        <button type="button" class="size-btn" data-kind="spray" data-w="16">スプレー</button>
       </div>
     </div>
   </div>
@@ -438,6 +439,7 @@
 
       var color = "#e53935";
       var lineW = 10;
+      var brushKind = "pen";
       var drawing = false;
       var last = null;
       var eraser = false;
@@ -462,13 +464,43 @@
           ctx.globalCompositeOperation = "destination-out";
           ctx.strokeStyle = "rgba(0,0,0,1)";
           ctx.lineWidth = lineW * 1.85;
+          ctx.globalAlpha = 1;
         } else {
           ctx.globalCompositeOperation = "source-over";
           ctx.strokeStyle = color;
           ctx.lineWidth = lineW;
+          ctx.globalAlpha = 1;
+          if (brushKind === "pencil") {
+            ctx.lineWidth = Math.max(2, lineW * 0.68);
+            ctx.globalAlpha = 0.9;
+          } else if (brushKind === "brush") {
+            ctx.lineWidth = lineW * 1.35;
+            ctx.globalAlpha = 0.72;
+          } else if (brushKind === "crayon") {
+            ctx.lineWidth = lineW * 1.55;
+            ctx.globalAlpha = 0.58;
+          }
         }
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
+      }
+
+      function sprayAt(point) {
+        var radius = lineW * 1.15;
+        var count = Math.floor(lineW * 2.8);
+        ctx.save();
+        ctx.globalCompositeOperation = eraser ? "destination-out" : "source-over";
+        ctx.fillStyle = eraser ? "rgba(0,0,0,1)" : color;
+        ctx.globalAlpha = eraser ? 1 : 0.56;
+        for (var i = 0; i < count; i += 1) {
+          var ang = Math.random() * Math.PI * 2;
+          var dist = Math.sqrt(Math.random()) * radius;
+          var dot = Math.random() * 1.1 + 0.45;
+          ctx.beginPath();
+          ctx.arc(point.x + Math.cos(ang) * dist, point.y + Math.sin(ang) * dist, dot, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
       }
 
       function syncSize() {
@@ -524,6 +556,10 @@
         }
         drawing = true;
         last = getPoint(ev);
+        if (brushKind === "spray") {
+          sprayAt(last);
+          return;
+        }
         ctx.beginPath();
         applyStrokeStyle();
         ctx.moveTo(last.x, last.y);
@@ -535,6 +571,53 @@
         if (!drawing) return;
         if (ev.type === "touchmove") ev.preventDefault();
         var p = getPoint(ev);
+        var dx = p.x - last.x;
+        var dy = p.y - last.y;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        if (brushKind === "spray") {
+          var step = 4;
+          var steps = Math.max(1, Math.floor(dist / step));
+          for (var s = 1; s <= steps; s += 1) {
+            sprayAt({
+              x: last.x + (dx * s) / steps,
+              y: last.y + (dy * s) / steps
+            });
+          }
+          last = p;
+          return;
+        }
+        if (brushKind === "brush") {
+          var speed = Math.min(1, dist / 18);
+          var width = lineW * (1.9 - speed * 0.9);
+          ctx.save();
+          ctx.globalCompositeOperation = "source-over";
+          ctx.strokeStyle = color;
+          ctx.globalAlpha = 0.2;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.lineWidth = width * 1.38;
+          ctx.beginPath();
+          ctx.moveTo(last.x, last.y);
+          ctx.lineTo(p.x, p.y);
+          ctx.stroke();
+
+          ctx.globalAlpha = 0.34;
+          ctx.lineWidth = width;
+          ctx.beginPath();
+          ctx.moveTo(last.x, last.y);
+          ctx.lineTo(p.x, p.y);
+          ctx.stroke();
+
+          ctx.globalAlpha = 0.46;
+          ctx.lineWidth = width * 0.62;
+          ctx.beginPath();
+          ctx.moveTo(last.x, last.y);
+          ctx.lineTo(p.x, p.y);
+          ctx.stroke();
+          ctx.restore();
+          last = p;
+          return;
+        }
         ctx.beginPath();
         applyStrokeStyle();
         ctx.moveTo(last.x, last.y);
@@ -1006,6 +1089,9 @@
           });
           b.classList.add("on");
           lineW = parseInt(b.getAttribute("data-w"), 10);
+          brushKind = b.getAttribute("data-kind") || "pen";
+          activeStamp = "";
+          eraser = false;
           closeAllPopups();
         });
       });

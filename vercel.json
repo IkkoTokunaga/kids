@@ -1,0 +1,29 @@
+{
+  "cleanUrls": false,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/games/index.html"
+    },
+    {
+      "source": "/seikatsu-manner-game.html",
+      "destination": "/games/seikatsu-manner-game.html"
+    },
+    {
+      "source": "/suuji-quiz-game.html",
+      "destination": "/games/suuji-quiz-game.html"
+    },
+    {
+      "source": "/moji-kotoba-game.html",
+      "destination": "/games/moji-kotoba-game.html"
+    },
+    {
+      "source": "/oekaki-hiroba.html",
+      "destination": "/games/oekaki-hiroba.html"
+    },
+    {
+      "source": "/soon.html",
+      "destination": "/games/soon.html"
+    }
+  ]
+}

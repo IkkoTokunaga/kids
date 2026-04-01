@@ -290,7 +290,7 @@
 
     .size-btn {
       min-height: 2.05rem;
-      padding: 0 0.55rem;
+      padding: 0.22rem 0.55rem;
       font-size: clamp(0.74rem, 2.8vw, 0.88rem);
       font-weight: 800;
       border: 3px solid #8d6e63;
@@ -299,6 +299,9 @@
       color: #3e2723;
       cursor: pointer;
       box-shadow: 0 3px 0 #6d4c41;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
     }
 
     .size-btn.on {
@@ -310,6 +313,70 @@
     .size-btn:active {
       transform: translateY(2px);
       box-shadow: 0 1px 0 #6d4c41;
+    }
+
+    .size-label {
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .touch-sample {
+      width: 1.35rem;
+      height: 0.5rem;
+      border-radius: 999px;
+      background: #5d4037;
+      border: 1px solid rgba(0, 0, 0, 0.18);
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .touch-sample.pencil {
+      height: 0.18rem;
+      opacity: 0.88;
+    }
+
+    .touch-sample.pen {
+      height: 0.3rem;
+    }
+
+    .touch-sample.brush {
+      height: 0.5rem;
+      opacity: 0.72;
+    }
+
+    .touch-sample.crayon {
+      height: 0.56rem;
+      background: repeating-linear-gradient(90deg, #6d4c41 0 3px, #8d6e63 3px 6px);
+    }
+
+    .touch-sample.spray {
+      width: 1.4rem;
+      height: 0.6rem;
+      border-radius: 0.4rem;
+      background:
+        radial-gradient(circle at 18% 50%, #5d4037 0 2px, transparent 3px),
+        radial-gradient(circle at 44% 38%, #5d4037 0 2px, transparent 3px),
+        radial-gradient(circle at 68% 55%, #5d4037 0 2px, transparent 3px),
+        radial-gradient(circle at 84% 40%, #5d4037 0 2px, transparent 3px);
+      border: 0;
+    }
+
+    .touch-sample.marker {
+      height: 0.45rem;
+      border-radius: 0.2rem;
+      opacity: 0.62;
+    }
+
+    .touch-sample.neon {
+      height: 0.36rem;
+      background: #00e5ff;
+      box-shadow: 0 0 4px rgba(0, 229, 255, 0.8);
+    }
+
+    .touch-sample.chalk {
+      height: 0.5rem;
+      background: repeating-linear-gradient(90deg, #78909c 0 2px, #b0bec5 2px 4px);
+      opacity: 0.8;
     }
 
     .action-btn {
@@ -512,11 +579,14 @@
     <div class="popup-card">
       <div class="popup-head"><p class="popup-title">えがきタッチ</p><button type="button" class="popup-close" data-popup-close>とじる</button></div>
       <div class="popup-body">
-        <button type="button" class="size-btn" data-kind="pencil" data-w="4">えんぴつ</button>
-        <button type="button" class="size-btn on" data-kind="pen" data-w="10">ペン</button>
-        <button type="button" class="size-btn" data-kind="brush" data-w="18">ふで</button>
-        <button type="button" class="size-btn" data-kind="crayon" data-w="22">クレヨン</button>
-        <button type="button" class="size-btn" data-kind="spray" data-w="16">スプレー</button>
+        <button type="button" class="size-btn" data-kind="pencil" data-w="4"><span class="touch-sample pencil" aria-hidden="true"></span><span class="size-label">えんぴつ</span></button>
+        <button type="button" class="size-btn on" data-kind="pen" data-w="10"><span class="touch-sample pen" aria-hidden="true"></span><span class="size-label">ペン</span></button>
+        <button type="button" class="size-btn" data-kind="brush" data-w="18"><span class="touch-sample brush" aria-hidden="true"></span><span class="size-label">ふで</span></button>
+        <button type="button" class="size-btn" data-kind="crayon" data-w="22"><span class="touch-sample crayon" aria-hidden="true"></span><span class="size-label">クレヨン</span></button>
+        <button type="button" class="size-btn" data-kind="spray" data-w="16"><span class="touch-sample spray" aria-hidden="true"></span><span class="size-label">スプレー</span></button>
+        <button type="button" class="size-btn" data-kind="marker" data-w="18"><span class="touch-sample marker" aria-hidden="true"></span><span class="size-label">マーカー</span></button>
+        <button type="button" class="size-btn" data-kind="neon" data-w="12"><span class="touch-sample neon" aria-hidden="true"></span><span class="size-label">ネオン</span></button>
+        <button type="button" class="size-btn" data-kind="chalk" data-w="20"><span class="touch-sample chalk" aria-hidden="true"></span><span class="size-label">チョーク</span></button>
       </div>
     </div>
   </div>
@@ -592,7 +662,10 @@
         pen: "ペン",
         brush: "ふで",
         crayon: "クレヨン",
-        spray: "スプレー"
+        spray: "スプレー",
+        marker: "マーカー",
+        neon: "ネオン",
+        chalk: "チョーク"
       };
       var templateNames = {
         road: "どうろ",
@@ -637,10 +710,25 @@
           } else if (brushKind === "crayon") {
             ctx.lineWidth = lineW * 1.55;
             ctx.globalAlpha = 0.58;
+          } else if (brushKind === "marker") {
+            ctx.lineWidth = lineW * 1.25;
+            ctx.globalAlpha = 0.5;
+            ctx.lineCap = "butt";
+            ctx.lineJoin = "round";
+          } else if (brushKind === "neon") {
+            ctx.lineWidth = lineW * 0.95;
+            ctx.globalAlpha = 0.95;
+            ctx.shadowColor = rainbowInk ? ctx.strokeStyle : color;
+            ctx.shadowBlur = Math.max(3, lineW * 0.9);
+          } else if (brushKind === "chalk") {
+            ctx.lineWidth = lineW * 1.45;
+            ctx.globalAlpha = 0.68;
           }
         }
-        ctx.lineCap = "round";
-        ctx.lineJoin = "round";
+        if (brushKind !== "marker") {
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+        }
       }
 
       function sprayAt(point) {
@@ -773,6 +861,18 @@
           ctx.lineTo(p.x, p.y);
           ctx.stroke();
           ctx.restore();
+          last = p;
+          return;
+        }
+        if (brushKind === "chalk") {
+          var jitter = Math.max(1.2, lineW * 0.08);
+          for (var c = 0; c < 3; c += 1) {
+            ctx.beginPath();
+            applyStrokeStyle();
+            ctx.moveTo(last.x + rand(-jitter, jitter), last.y + rand(-jitter, jitter));
+            ctx.lineTo(p.x + rand(-jitter, jitter), p.y + rand(-jitter, jitter));
+            ctx.stroke();
+          }
           last = p;
           return;
         }

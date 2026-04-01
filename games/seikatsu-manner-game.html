@@ -1329,7 +1329,16 @@
         els.choices.innerHTML = "";
         state.locked = false;
 
-        for (var i = 0; i < q.choices.length; i++) {
+        var order = [];
+        for (var i = 0; i < q.choices.length; i++) order.push(i);
+        for (var j = order.length - 1; j > 0; j--) {
+          var r = Math.floor(Math.random() * (j + 1));
+          var t = order[j];
+          order[j] = order[r];
+          order[r] = t;
+        }
+
+        for (var k = 0; k < order.length; k++) {
           (function (idx) {
             var btn = document.createElement("button");
             btn.type = "button";
@@ -1338,7 +1347,7 @@
             btn.setAttribute("aria-label", q.choices[idx]);
             bindChoiceAction(btn, function () { onChoice(idx, btn); });
             els.choices.appendChild(btn);
-          })(i);
+          })(order[k]);
         }
       }
 

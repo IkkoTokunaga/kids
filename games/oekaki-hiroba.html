@@ -34,7 +34,9 @@
         radial-gradient(120% 80% at 50% -20%, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 56%),
         linear-gradient(160deg, #0f1f4d 0%, #2454ad 32%, #1eb9d4 56%, #2dc57a 100%);
       background-size: 100% 100%, 180% 180%;
-      animation: oekakiSkyShift 16s ease-in-out infinite alternate;
+      animation:
+        oekakiSkyShift 16s ease-in-out infinite alternate,
+        dayNightFilter 300s linear infinite;
       padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
       position: relative;
       overflow-x: hidden;
@@ -58,6 +60,14 @@
     @keyframes oekakiSkyShift {
       0% { background-position: 0 0, 0% 38%; }
       100% { background-position: 0 0, 100% 62%; }
+    }
+
+    @keyframes dayNightFilter {
+      0%, 20% { filter: brightness(1) saturate(1); }
+      45% { filter: brightness(0.88) saturate(1.05); }
+      55% { filter: brightness(0.62) saturate(0.85); }
+      80% { filter: brightness(0.88) saturate(1.02); }
+      100% { filter: brightness(1) saturate(1); }
     }
 
     @keyframes oekakiSparkleMove {

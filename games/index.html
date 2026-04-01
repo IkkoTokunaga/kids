@@ -25,11 +25,44 @@
 
     body {
       min-height: 100dvh;
-      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 38%, var(--grass) 38%, #4a9f4a 100%);
+      background:
+        radial-gradient(130% 80% at 50% -20%, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0) 58%),
+        linear-gradient(160deg, #0f1f4d 0%, #1f4b9f 34%, #26a8cc 58%, #27b07f 100%);
+      background-size: 100% 100%, 180% 180%;
+      animation: bgShift 14s ease-in-out infinite alternate;
       padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: -10%;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 15% 20%, rgba(255, 255, 255, 0.23) 0 3px, transparent 4px),
+        radial-gradient(circle at 70% 35%, rgba(255, 255, 255, 0.2) 0 2px, transparent 3px),
+        radial-gradient(circle at 45% 75%, rgba(255, 255, 255, 0.18) 0 2px, transparent 3px);
+      background-size: 320px 320px, 280px 280px, 380px 380px;
+      opacity: 0.7;
+      animation: sparkleMove 24s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes bgShift {
+      0% { background-position: 0 0, 0% 35%; }
+      100% { background-position: 0 0, 100% 65%; }
+    }
+
+    @keyframes sparkleMove {
+      0% { transform: translate(0, 0); }
+      100% { transform: translate(-36px, -22px); }
     }
 
     .page {
+      position: relative;
+      z-index: 1;
       max-width: 720px;
       margin: 0 auto;
       padding: 0.85rem 0.85rem 1.5rem;

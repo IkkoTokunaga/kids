@@ -35,8 +35,13 @@
       display: flex;
       flex-direction: column;
       min-height: 100dvh;
-      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-bottom) 42%, var(--grass) 42%, #4a9f4a 100%);
+      background:
+        radial-gradient(130% 78% at 50% -20%, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0) 58%),
+        linear-gradient(162deg, #112253 0%, #2457b1 36%, #22b2cb 58%, #32bf7f 100%);
+      background-size: 100% 100%, 180% 180%;
+      animation: mannerSkyShift 16s ease-in-out infinite alternate;
       padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0) env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+      overflow-x: hidden;
     }
 
     .clouds {
@@ -115,6 +120,11 @@
       0% { transform: translateX(0); opacity: 0.9; }
       50% { transform: translateX(12px); opacity: 1; }
       100% { transform: translateX(0); opacity: 0.9; }
+    }
+
+    @keyframes mannerSkyShift {
+      0% { background-position: 0 0, 0% 35%; }
+      100% { background-position: 0 0, 100% 65%; }
     }
 
     .wrap {

@@ -1215,7 +1215,11 @@
       };
 
       function playPinpon() {
-        window.KidsQuizEffects.playPinpon(state);
+        try {
+          if (window.KidsQuizEffects && window.KidsQuizEffects.playPinpon) {
+            window.KidsQuizEffects.playPinpon(state);
+          }
+        } catch (e) {}
       }
 
       function burstConfetti(layer, count) {
@@ -1239,7 +1243,11 @@
       }
 
       function playBubuu() {
-        window.KidsQuizEffects.playBubuu(state);
+        try {
+          if (window.KidsQuizEffects && window.KidsQuizEffects.playBubuu) {
+            window.KidsQuizEffects.playBubuu(state);
+          }
+        } catch (e) {}
       }
 
       function buildStepDots() {
@@ -1276,6 +1284,10 @@
       }
 
       function showFeedback(ok, title, sub, onDone) {
+        if (!(window.KidsQuizEffects && window.KidsQuizEffects.showOverlay)) {
+          if (onDone) onDone();
+          return;
+        }
         window.KidsQuizEffects.showOverlay({
           overlay: els.overlay,
           titleEl: els.feedbackTitle,

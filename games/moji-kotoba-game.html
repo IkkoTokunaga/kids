@@ -484,11 +484,19 @@
       }
 
       function pinpon() {
-        window.KidsQuizEffects.playPinpon(state);
+        try {
+          if (window.KidsQuizEffects && window.KidsQuizEffects.playPinpon) {
+            window.KidsQuizEffects.playPinpon(state);
+          }
+        } catch (e) {}
       }
 
       function bubuu() {
-        window.KidsQuizEffects.playBubuu(state);
+        try {
+          if (window.KidsQuizEffects && window.KidsQuizEffects.playBubuu) {
+            window.KidsQuizEffects.playBubuu(state);
+          }
+        } catch (e) {}
       }
 
       function buildStars() {
@@ -510,6 +518,10 @@
       }
 
       function showOverlay(ok, title, sub, ms, done) {
+        if (!(window.KidsQuizEffects && window.KidsQuizEffects.showOverlay)) {
+          if (done) done();
+          return;
+        }
         window.KidsQuizEffects.showOverlay({
           overlay: els.overlay,
           titleEl: els.overlayTitle,
@@ -523,7 +535,7 @@
             if (!els.overlayCard) return;
             els.overlayCard.classList.toggle("correct-burst", isOk);
             if (els.sparklesLine) els.sparklesLine.classList.toggle("hidden", !isOk);
-            if (isOk && els.confettiLayer) {
+            if (isOk && els.confettiLayer && window.KidsQuizEffects.burstConfetti) {
               window.KidsQuizEffects.burstConfetti(els.confettiLayer, 28);
             }
           },

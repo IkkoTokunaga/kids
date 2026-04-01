@@ -4,11 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>せいかつマナー すごろく</title>
+  <link rel="stylesheet" href="quiz-common.css" />
   <style>
     :root {
-      --sky-top: #87ceeb;
-      --sky-bottom: #b8e8ff;
-      --grass: #6bc96b;
+      --sky-top: #90caf9;
+      --sky-bottom: #bbdefb;
+      --grass: #a5d6a7;
       --path: #d4a574;
       --path-edge: #b8895a;
       --btn: #fff9e6;
@@ -883,6 +884,7 @@
     </div>
   </div>
 
+  <script src="quiz-effects.js"></script>
   <script>
     (function () {
       "use strict";
@@ -1191,37 +1193,8 @@
         wrongBuzzerLine: document.getElementById("wrongBuzzerLine")
       };
 
-      function getAudioContext() {
-        if (!state.audioCtx) {
-          var Ctx = window.AudioContext || window.webkitAudioContext;
-          if (Ctx) state.audioCtx = new Ctx();
-        }
-        return state.audioCtx;
-      }
-
       function playPinpon() {
-        var ctx = getAudioContext();
-        if (!ctx) return;
-        if (ctx.state === "suspended") ctx.resume();
-
-        var now = ctx.currentTime;
-        function beep(freq, t0, dur) {
-          var osc = ctx.createOscillator();
-          var g = ctx.createGain();
-          osc.type = "sine";
-          osc.frequency.setValueAtTime(freq, t0);
-          g.gain.setValueAtTime(0.0001, t0);
-          g.gain.exponentialRampToValueAtTime(0.16, t0 + 0.02);
-          g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-          osc.connect(g);
-          g.connect(ctx.destination);
-          osc.start(t0);
-          osc.stop(t0 + dur + 0.05);
-        }
-
-        beep(784, now, 0.1);
-        beep(1046.5, now + 0.11, 0.12);
-        beep(1318.51, now + 0.24, 0.22);
+        window.KidsQuizEffects.playPinpon(state);
       }
 
       function burstConfetti(layer, count) {
@@ -1245,40 +1218,7 @@
       }
 
       function playBubuu() {
-        var ctx = getAudioContext();
-        if (!ctx) return;
-        if (ctx.state === "suspended") ctx.resume();
-        var t = ctx.currentTime;
-
-        var o1 = ctx.createOscillator();
-        var g1 = ctx.createGain();
-        o1.type = "sawtooth";
-        o1.frequency.setValueAtTime(218, t);
-        o1.frequency.exponentialRampToValueAtTime(155, t + 0.35);
-        o1.frequency.exponentialRampToValueAtTime(98, t + 1.05);
-        g1.gain.setValueAtTime(0.0001, t);
-        g1.gain.exponentialRampToValueAtTime(0.11, t + 0.05);
-        g1.gain.setValueAtTime(0.095, t + 0.2);
-        g1.gain.setValueAtTime(0.085, t + 0.95);
-        g1.gain.exponentialRampToValueAtTime(0.0001, t + 1.38);
-        o1.connect(g1);
-        g1.connect(ctx.destination);
-        o1.start(t);
-        o1.stop(t + 1.42);
-
-        var o2 = ctx.createOscillator();
-        var g2 = ctx.createGain();
-        o2.type = "square";
-        o2.frequency.setValueAtTime(109, t);
-        o2.frequency.exponentialRampToValueAtTime(72, t + 1.05);
-        g2.gain.setValueAtTime(0.0001, t);
-        g2.gain.exponentialRampToValueAtTime(0.048, t + 0.06);
-        g2.gain.setValueAtTime(0.04, t + 0.25);
-        g2.gain.exponentialRampToValueAtTime(0.0001, t + 1.32);
-        o2.connect(g2);
-        g2.connect(ctx.destination);
-        o2.start(t);
-        o2.stop(t + 1.36);
+        window.KidsQuizEffects.playBubuu(state);
       }
 
       function buildStepDots() {
@@ -1315,37 +1255,37 @@
       }
 
       function showFeedback(ok, title, sub, onDone) {
-        els.feedbackTitle.textContent = title;
-        els.feedbackSub.textContent = sub || "";
-        els.feedbackSparkles.classList.toggle("hidden", !ok);
-        if (els.wrongBuzzerLine) {
-          els.wrongBuzzerLine.classList.toggle("hidden", ok);
-          els.wrongBuzzerLine.setAttribute("aria-hidden", ok ? "true" : "false");
-        }
-        els.overlay.classList.toggle("feedback-correct", ok);
-        els.overlay.classList.toggle("feedback-wrong", !ok);
-        els.feedbackCard.classList.toggle("correct-burst", ok);
-        els.feedbackCard.classList.toggle("wrong-burst", !ok);
-        if (ok) burstConfetti(null);
-        else if (els.confettiLayer) {
-          els.confettiLayer.classList.add("hidden");
-          els.confettiLayer.innerHTML = "";
-        }
-        els.overlay.classList.add("show");
-        var ms = ok ? 1950 : 1650;
-        window.setTimeout(function () {
-          els.overlay.classList.remove("show");
-          els.overlay.classList.remove("feedback-correct");
-          els.overlay.classList.remove("feedback-wrong");
-          els.feedbackCard.classList.remove("correct-burst");
-          els.feedbackCard.classList.remove("wrong-burst");
-          if (els.wrongBuzzerLine) els.wrongBuzzerLine.classList.add("hidden");
-          if (els.confettiLayer) {
-            els.confettiLayer.classList.add("hidden");
-            els.confettiLayer.innerHTML = "";
-          }
-          if (onDone) onDone();
-        }, ms);
+        window.KidsQuizEffects.showOverlay({
+          overlay: els.overlay,
+          titleEl: els.feedbackTitle,
+          subEl: els.feedbackSub,
+          buzzerEl: els.wrongBuzzerLine,
+          ok: ok,
+          title: title,
+          sub: sub,
+          okClass: "feedback-correct",
+          ngClass: "feedback-wrong",
+          durationMs: ok ? 1950 : 1650,
+          beforeShow: function (isOk) {
+            els.feedbackSparkles.classList.toggle("hidden", !isOk);
+            els.feedbackCard.classList.toggle("correct-burst", isOk);
+            els.feedbackCard.classList.toggle("wrong-burst", !isOk);
+            if (isOk) burstConfetti(null);
+            else if (els.confettiLayer) {
+              els.confettiLayer.classList.add("hidden");
+              els.confettiLayer.innerHTML = "";
+            }
+          },
+          afterHide: function () {
+            els.feedbackCard.classList.remove("correct-burst");
+            els.feedbackCard.classList.remove("wrong-burst");
+            if (els.confettiLayer) {
+              els.confettiLayer.classList.add("hidden");
+              els.confettiLayer.innerHTML = "";
+            }
+          },
+          onDone: onDone
+        });
       }
 
       function renderQuestion() {

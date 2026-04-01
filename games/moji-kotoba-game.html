@@ -4,10 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>もじ・ことば あそび</title>
+  <link rel="stylesheet" href="quiz-common.css" />
   <style>
     :root {
-      --sky-top: #b39ddb;
-      --sky-bottom: #e1bee7;
+      --sky-top: #90caf9;
+      --sky-bottom: #bbdefb;
       --field: #81c784;
       --field-dark: #43a047;
       --panel: rgba(255, 255, 255, 0.95);
@@ -86,7 +87,7 @@
       font-size: clamp(0.82rem, 3vw, 0.98rem);
       font-weight: 700;
       text-align: center;
-      color: #5e35b1;
+      color: #1565c0;
     }
 
     .stars {
@@ -117,7 +118,7 @@
       padding: 1.1rem 0.95rem 1.15rem;
       box-shadow: 0 6px 22px var(--shadow);
       min-height: 10rem;
-      border: 4px solid rgba(129, 199, 132, 0.65);
+      border: 4px solid rgba(100, 181, 246, 0.75);
     }
 
     .question {
@@ -133,7 +134,7 @@
       text-align: center;
       font-size: clamp(0.95rem, 3.5vw, 1.12rem);
       font-weight: 700;
-      color: #2e7d32;
+      color: #1e88e5;
       margin: 0 0 0.55rem;
     }
 
@@ -224,8 +225,8 @@
 
     .finish-panel {
       text-align: center;
-      background: linear-gradient(165deg, #f3e5f5 0%, #e8f5e9 100%);
-      border: 6px solid #ab47bc;
+      background: linear-gradient(165deg, #e3f2fd 0%, #e8f5e9 100%);
+      border: 6px solid #42a5f5;
       border-radius: 1.25rem;
       padding: 1.35rem 1rem;
       box-shadow: 0 8px 28px var(--shadow);
@@ -235,14 +236,14 @@
       font-size: clamp(2rem, 8.5vw, 3rem);
       font-weight: 900;
       margin: 0 0 0.5rem;
-      color: #6a1b9a;
+      color: #0d47a1;
     }
 
     .finish-msg {
       font-size: clamp(1.1rem, 4.2vw, 1.45rem);
       font-weight: 700;
       margin: 0 0 1rem;
-      color: #33691e;
+      color: #2e7d32;
     }
 
     .restart-btn {
@@ -250,17 +251,17 @@
       padding: 0 1.6rem;
       font-size: clamp(1.05rem, 4.2vw, 1.3rem);
       font-weight: 800;
-      border: 4px solid #7b1fa2;
+      border: 4px solid #1565c0;
       border-radius: 999px;
-      background: #ce93d8;
-      color: #4a148c;
+      background: #90caf9;
+      color: #0d47a1;
       cursor: pointer;
-      box-shadow: 0 4px 0 #6a1b9a;
+      box-shadow: 0 4px 0 #1565c0;
     }
 
     .restart-btn:active {
       transform: translateY(2px);
-      box-shadow: 0 2px 0 #6a1b9a;
+      box-shadow: 0 2px 0 #1565c0;
     }
 
     .overlay {
@@ -296,7 +297,7 @@
       max-width: 90vw;
       text-align: center;
       box-shadow: 0 14px 44px rgba(0, 0, 0, 0.22);
-      border: 5px solid #ffd54f;
+      border: 5px solid #64b5f6;
     }
 
     .overlay.ng .overlay-card {
@@ -311,7 +312,7 @@
     }
 
     .overlay.ok h2 {
-      color: #e65100;
+      color: #0d47a1;
     }
 
     .overlay.ng h2 {
@@ -361,13 +362,16 @@
   </div>
 
   <div class="overlay" id="overlay" aria-live="assertive">
+    <div class="confetti-layer hidden" id="confettiLayer" aria-hidden="true"></div>
     <div class="overlay-card" id="overlayCard">
+      <div class="sparkles hidden" id="sparklesLine" aria-hidden="true">やったね！<br />すごーい！</div>
       <h2 id="overlayTitle"></h2>
       <p class="buzzer hidden" id="buzzerLine">ぶぶーーーー</p>
       <p id="overlaySub"></p>
     </div>
   </div>
 
+  <script src="quiz-effects.js"></script>
   <script>
     (function () {
       "use strict";
@@ -440,7 +444,9 @@
         overlayCard: document.getElementById("overlayCard"),
         overlayTitle: document.getElementById("overlayTitle"),
         overlaySub: document.getElementById("overlaySub"),
-        buzzerLine: document.getElementById("buzzerLine")
+        buzzerLine: document.getElementById("buzzerLine"),
+        sparklesLine: document.getElementById("sparklesLine"),
+        confettiLayer: document.getElementById("confettiLayer")
       };
 
       function shufflePick() {
@@ -457,67 +463,12 @@
         return out;
       }
 
-      function getCtx() {
-        if (!state.ctx) {
-          var C = window.AudioContext || window.webkitAudioContext;
-          if (C) state.ctx = new C();
-        }
-        return state.ctx;
-      }
-
       function pinpon() {
-        var ctx = getCtx();
-        if (!ctx) return;
-        if (ctx.state === "suspended") ctx.resume();
-        var t = ctx.currentTime;
-        function beep(f, t0, d) {
-          var o = ctx.createOscillator();
-          var g = ctx.createGain();
-          o.type = "sine";
-          o.frequency.setValueAtTime(f, t0);
-          g.gain.setValueAtTime(0.0001, t0);
-          g.gain.exponentialRampToValueAtTime(0.14, t0 + 0.02);
-          g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
-          o.connect(g);
-          g.connect(ctx.destination);
-          o.start(t0);
-          o.stop(t0 + d + 0.04);
-        }
-        beep(784, t, 0.1);
-        beep(1046.5, t + 0.11, 0.12);
-        beep(1318.51, t + 0.24, 0.2);
+        window.KidsQuizEffects.playPinpon(state);
       }
 
       function bubuu() {
-        var ctx = getCtx();
-        if (!ctx) return;
-        if (ctx.state === "suspended") ctx.resume();
-        var t = ctx.currentTime;
-        var o1 = ctx.createOscillator();
-        var g1 = ctx.createGain();
-        o1.type = "sawtooth";
-        o1.frequency.setValueAtTime(218, t);
-        o1.frequency.exponentialRampToValueAtTime(95, t + 1.05);
-        g1.gain.setValueAtTime(0.0001, t);
-        g1.gain.exponentialRampToValueAtTime(0.1, t + 0.05);
-        g1.gain.setValueAtTime(0.085, t + 0.95);
-        g1.gain.exponentialRampToValueAtTime(0.0001, t + 1.35);
-        o1.connect(g1);
-        g1.connect(ctx.destination);
-        o1.start(t);
-        o1.stop(t + 1.4);
-        var o2 = ctx.createOscillator();
-        var g2 = ctx.createGain();
-        o2.type = "square";
-        o2.frequency.setValueAtTime(108, t);
-        o2.frequency.exponentialRampToValueAtTime(70, t + 1.0);
-        g2.gain.setValueAtTime(0.0001, t);
-        g2.gain.exponentialRampToValueAtTime(0.044, t + 0.06);
-        g2.gain.exponentialRampToValueAtTime(0.0001, t + 1.28);
-        o2.connect(g2);
-        g2.connect(ctx.destination);
-        o2.start(t);
-        o2.stop(t + 1.32);
+        window.KidsQuizEffects.playBubuu(state);
       }
 
       function buildStars() {
@@ -539,20 +490,34 @@
       }
 
       function showOverlay(ok, title, sub, ms, done) {
-        els.overlayTitle.textContent = title;
-        els.overlaySub.textContent = sub || "";
-        els.overlay.classList.toggle("ok", ok);
-        els.overlay.classList.toggle("ng", !ok);
-        els.buzzerLine.classList.toggle("hidden", ok);
-        els.buzzerLine.setAttribute("aria-hidden", ok ? "true" : "false");
-        els.overlay.classList.add("show");
-        window.setTimeout(function () {
-          els.overlay.classList.remove("show");
-          els.overlay.classList.remove("ok");
-          els.overlay.classList.remove("ng");
-          els.buzzerLine.classList.add("hidden");
-          if (done) done();
-        }, ms);
+        window.KidsQuizEffects.showOverlay({
+          overlay: els.overlay,
+          titleEl: els.overlayTitle,
+          subEl: els.overlaySub,
+          buzzerEl: els.buzzerLine,
+          ok: ok,
+          title: title,
+          sub: sub,
+          durationMs: ms,
+          beforeShow: function (isOk) {
+            if (!els.overlayCard) return;
+            els.overlayCard.classList.toggle("correct-burst", isOk);
+            if (els.sparklesLine) els.sparklesLine.classList.toggle("hidden", !isOk);
+            if (isOk && els.confettiLayer) {
+              window.KidsQuizEffects.burstConfetti(els.confettiLayer, 28);
+            }
+          },
+          afterHide: function () {
+            if (!els.overlayCard) return;
+            els.overlayCard.classList.remove("correct-burst");
+            if (els.sparklesLine) els.sparklesLine.classList.add("hidden");
+            if (els.confettiLayer) {
+              els.confettiLayer.classList.add("hidden");
+              els.confettiLayer.innerHTML = "";
+            }
+          },
+          onDone: done
+        });
       }
 
       function renderQ() {

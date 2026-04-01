@@ -165,6 +165,21 @@
       gap: 0.35rem;
     }
 
+    .color-chip {
+      width: 1rem;
+      height: 1rem;
+      border-radius: 999px;
+      border: 2px solid rgba(0, 0, 0, 0.25);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.55);
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
+    .color-chip.eraser {
+      background: linear-gradient(135deg, #eceff1 45%, #b0bec5 45%, #b0bec5 55%, #eceff1 55%);
+    }
+
     .menu-btn:active {
       transform: translateY(2px);
       box-shadow: 0 1px 0 #fb8c00;
@@ -415,12 +430,12 @@
   </header>
 
   <div class="toolbar" role="toolbar" aria-label="どうぐ">
-    <button type="button" class="menu-btn" data-popup-open="popupColors">🎨 いろ</button>
-    <button type="button" class="menu-btn" data-popup-open="popupSizes">🖌️ タッチ</button>
+    <button type="button" class="menu-btn" data-popup-open="popupColors" id="btnColors">🎨 いろ: あか</button>
+    <button type="button" class="menu-btn" data-popup-open="popupSizes" id="btnSizes">🖌️ タッチ: ペン</button>
     <button type="button" class="action-btn action-clear" id="btnClear">ぜんぶ けす</button>
     <button type="button" class="action-btn action-chaos" id="btnYaminabe">やみなべ</button>
-    <button type="button" class="menu-btn" data-popup-open="popupTemplates">🖼️ テンプレート</button>
-    <button type="button" class="menu-btn" data-popup-open="popupStamps">✨ スタンプ 200</button>
+    <button type="button" class="menu-btn" data-popup-open="popupTemplates" id="btnTemplates">🖼️ テンプレート: なし</button>
+    <button type="button" class="menu-btn" data-popup-open="popupStamps" id="btnStamps">✨ スタンプ: なし</button>
   </div>
 
   <div id="popupColors" class="popup" role="dialog" aria-label="いろ">
@@ -504,8 +519,39 @@
       var last = null;
       var eraser = false;
       var activeStamp = "";
+      var activeTemplate = "";
       var lastFrameW = 0;
       var lastFrameH = 0;
+      var colorNames = {
+        "#e53935": "あか",
+        "#fb8c00": "オレンジ",
+        "#1e88e5": "あお",
+        "#00acc1": "みずいろ",
+        "#43a047": "みどり",
+        "#fdd835": "きいろ",
+        "#ffb6c1": "ピンク",
+        "#8e24aa": "むらさき",
+        "#6d4c41": "ちゃいろ",
+        "#212121": "くろ",
+        "eraser": "けしゴム"
+      };
+      var brushNames = {
+        pencil: "えんぴつ",
+        pen: "ペン",
+        brush: "ふで",
+        crayon: "クレヨン",
+        spray: "スプレー"
+      };
+      var templateNames = {
+        road: "どうろ",
+        cake: "ケーキやさん",
+        park: "ゆうえんち",
+        city: "まちなみ",
+        sea: "うみ",
+        space: "うちゅう",
+        castle: "おしろ",
+        garden: "おはなばたけ"
+      };
       var STAMPS = [
         "🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐔","🐧","🐦","🦆","🦉",
         "🦄","🐝","🦋","🐌","🐞","🐢","🐍","🦎","🦖","🦕","🐙","🦑","🦀","🐠","🐟","🐬","🐳","🦈","🐊","🦭",
@@ -1093,6 +1139,27 @@
         });
       }
 
+      function updateMenuLabels() {
+        var btnColors = document.getElementById("btnColors");
+        var btnSizes = document.getElementById("btnSizes");
+        var btnTemplates = document.getElementById("btnTemplates");
+        var btnStamps = document.getElementById("btnStamps");
+        var sizeLabel = brushNames[brushKind] || "ペン";
+        var templateLabel = activeTemplate ? (templateNames[activeTemplate] || activeTemplate) : "なし";
+        var stampLabel = activeStamp || "なし";
+        if (btnColors) {
+          if (eraser) {
+            btnColors.innerHTML = '🎨 いろ: <span class="color-chip eraser" aria-hidden="true"></span>';
+          } else {
+            btnColors.innerHTML = '🎨 いろ: <span class="color-chip" aria-hidden="true" style="background:' + color + '"></span>';
+          }
+          btnColors.setAttribute("aria-label", "いろ");
+        }
+        if (btnSizes) btnSizes.textContent = "🖌️ タッチ: " + sizeLabel;
+        if (btnTemplates) btnTemplates.textContent = "🖼️ テンプレート: " + templateLabel;
+        if (btnStamps) btnStamps.textContent = "✨ スタンプ: " + stampLabel;
+      }
+
       function bindPopupControls() {
         document.querySelectorAll("[data-popup-open]").forEach(function (btn) {
           btn.addEventListener("click", function () {
@@ -1138,6 +1205,7 @@
             eraser = false;
             color = c;
           }
+          updateMenuLabels();
           closeAllPopups();
         });
       });
@@ -1152,6 +1220,7 @@
           brushKind = b.getAttribute("data-kind") || "pen";
           activeStamp = "";
           eraser = false;
+          updateMenuLabels();
           closeAllPopups();
         });
       });
@@ -1165,6 +1234,7 @@
         b.classList.add("on");
         activeStamp = b.getAttribute("data-stamp");
         eraser = false;
+        updateMenuLabels();
         closeAllPopups();
       });
 
@@ -1179,6 +1249,7 @@
       document.querySelectorAll(".template-btn").forEach(function (btn) {
         btn.addEventListener("click", function () {
           var type = btn.getAttribute("data-template");
+          activeTemplate = type || "";
           if (type === "road") drawRoadTemplate();
           if (type === "cake") drawCakeTemplate();
           if (type === "park") drawParkTemplate();
@@ -1187,6 +1258,7 @@
           if (type === "space") drawSpaceTemplate();
           if (type === "castle") drawCastleTemplate();
           if (type === "garden") drawGardenTemplate();
+          updateMenuLabels();
           closeAllPopups();
         });
       });
@@ -1214,6 +1286,7 @@
         renderStampAccordion();
         bindPopupControls();
         syncSize();
+        updateMenuLabels();
       });
     })();
   </script>

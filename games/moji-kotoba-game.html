@@ -185,6 +185,7 @@
       background: var(--choice-bg, #eceff1);
       color: var(--text);
       cursor: pointer;
+      touch-action: manipulation;
       box-shadow: 0 7px 0 var(--choice-shadow, #78909c);
       transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
     }
@@ -552,12 +553,27 @@
             b.className = "choice-btn";
             b.textContent = q.choices[n];
             b.setAttribute("aria-label", q.choices[n]);
-            b.addEventListener("click", function () {
-              pick(n, b);
-            });
+            bindChoiceAction(b, function () { pick(n, b); });
             els.choices.appendChild(b);
           })(c);
         }
+      }
+
+      function bindChoiceAction(btn, onPick) {
+        var handledByPointer = false;
+        btn.addEventListener("pointerup", function (ev) {
+          if (ev.pointerType === "mouse" && ev.button !== 0) return;
+          handledByPointer = true;
+          ev.preventDefault();
+          onPick();
+          window.setTimeout(function () {
+            handledByPointer = false;
+          }, 0);
+        });
+        btn.addEventListener("click", function () {
+          if (handledByPointer) return;
+          onPick();
+        });
       }
 
       function setDisabled(d) {

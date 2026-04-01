@@ -313,6 +313,7 @@
       background: var(--choice-bg, var(--btn));
       color: #263238;
       cursor: pointer;
+      touch-action: manipulation;
       box-shadow: 0 7px 0 var(--choice-shadow, #c9a82e);
       transition:
         transform 0.15s ease,
@@ -1323,12 +1324,27 @@
             btn.className = "choice-btn";
             btn.textContent = q.choices[idx];
             btn.setAttribute("aria-label", q.choices[idx]);
-            btn.addEventListener("click", function () {
-              onChoice(idx, btn);
-            });
+            bindChoiceAction(btn, function () { onChoice(idx, btn); });
             els.choices.appendChild(btn);
           })(i);
         }
+      }
+
+      function bindChoiceAction(btn, onPick) {
+        var handledByPointer = false;
+        btn.addEventListener("pointerup", function (ev) {
+          if (ev.pointerType === "mouse" && ev.button !== 0) return;
+          handledByPointer = true;
+          ev.preventDefault();
+          onPick();
+          window.setTimeout(function () {
+            handledByPointer = false;
+          }, 0);
+        });
+        btn.addEventListener("click", function () {
+          if (handledByPointer) return;
+          onPick();
+        });
       }
 
       function setAllChoicesDisabled(disabled) {

@@ -24,6 +24,7 @@ check "suuji-quiz-game.html"
 check "moji-kotoba-game.html"
 check "oekaki-hiroba.html"
 check "あそびを えらんでね"
+check 'href="/favicon.svg"'
 
 test -f "$ROOT/games/soon.html" || { echo "FAIL: missing soon.html"; exit 1; }
 

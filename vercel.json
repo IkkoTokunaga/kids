@@ -2,6 +2,10 @@
   "cleanUrls": false,
   "rewrites": [
     {
+      "source": "/favicon.svg",
+      "destination": "/games/favicon.svg"
+    },
+    {
       "source": "/quiz-common.css",
       "destination": "/games/quiz-common.css"
     },

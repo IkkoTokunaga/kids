@@ -53,5 +53,6 @@ check "closeAllPopups"
 check "bgCanvas"
 check "var ctx = bgCtx;"
 check "ResizeObserver"
+check "resizeSnapshotDraw"
 
 echo "OK: oekaki-hiroba.html checks passed"

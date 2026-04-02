@@ -756,6 +756,30 @@
         var h = frame.clientHeight;
         if (w < 10 || h < 10) return;
         if (w === lastFrameW && h === lastFrameH && canvas.width > 0) return;
+
+        var prevW = lastFrameW;
+        var prevH = lastFrameH;
+        var keepPaint =
+          prevW > 0 &&
+          prevH > 0 &&
+          canvas.width > 0 &&
+          canvas.height > 0 &&
+          bgCanvas.width > 0 &&
+          bgCanvas.height > 0;
+        var resizeSnapshotDraw = null;
+        var resizeSnapshotBg = null;
+        if (keepPaint) {
+          resizeSnapshotDraw = document.createElement("canvas");
+          resizeSnapshotDraw.width = canvas.width;
+          resizeSnapshotDraw.height = canvas.height;
+          resizeSnapshotDraw.getContext("2d").drawImage(canvas, 0, 0);
+
+          resizeSnapshotBg = document.createElement("canvas");
+          resizeSnapshotBg.width = bgCanvas.width;
+          resizeSnapshotBg.height = bgCanvas.height;
+          resizeSnapshotBg.getContext("2d").drawImage(bgCanvas, 0, 0);
+        }
+
         lastFrameW = w;
         lastFrameH = h;
         bgCanvas.width = Math.floor(w * dpr);
@@ -769,10 +793,19 @@
 
         bgCtx.setTransform(1, 0, 0, 1, 0, 0);
         bgCtx.scale(dpr, dpr);
-        bgCtx.clearRect(0, 0, w, h);
+        if (resizeSnapshotBg) {
+          bgCtx.drawImage(resizeSnapshotBg, 0, 0, resizeSnapshotBg.width, resizeSnapshotBg.height, 0, 0, w, h);
+        } else {
+          bgCtx.clearRect(0, 0, w, h);
+        }
+
         ctx.setTransform(1, 0, 0, 1, 0, 0);
         ctx.scale(dpr, dpr);
-        ctx.clearRect(0, 0, w, h);
+        if (resizeSnapshotDraw) {
+          ctx.drawImage(resizeSnapshotDraw, 0, 0, resizeSnapshotDraw.width, resizeSnapshotDraw.height, 0, 0, w, h);
+        } else {
+          ctx.clearRect(0, 0, w, h);
+        }
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
       }

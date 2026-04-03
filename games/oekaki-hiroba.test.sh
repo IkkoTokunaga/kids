@@ -2,8 +2,10 @@
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 FILE="$ROOT/games/oekaki-hiroba.html"
+JSON="$ROOT/games/oekaki-stamps.json"
 
 test -f "$FILE" || { echo "FAIL: missing $FILE"; exit 1; }
+test -f "$JSON" || { echo "FAIL: missing $JSON"; exit 1; }
 
 check() {
   if ! grep -qF "$1" "$FILE"; then
@@ -17,10 +19,6 @@ check 'href="/"'
 check "drawCanvas"
 check "ぜんぶ けす"
 check 'popup-title">スタンプ</p>'
-check "summary>スタンプ いちらん</summary>"
-check "🐛"
-check "💐"
-check "🪷"
 check "やみなべ"
 check "テンプレート"
 check "いろ"
@@ -36,9 +34,13 @@ check "うちゅう"
 check "おしろ"
 check "おはなばたけ"
 check "stampAccordion"
-check "STAMPS"
 check "renderStampAccordion"
-check "スタンプ いちらん"
+check "buildStampUI"
+check "stamp-tabs"
+check "data-stamp-tab"
+check "oekaki-stamps.json"
+check "stampsJsonUrl"
+check "setStampTab"
 check "sprayAt"
 check "data-kind=\"spray\""
 check "placeStamp"
@@ -78,15 +80,22 @@ check "ResizeObserver"
 check "resizeSnapshotDraw"
 
 python3 - <<PY
-import ast
-import re
+import json
 from pathlib import Path
-text = (Path("$ROOT") / "games" / "oekaki-hiroba.html").read_text(encoding="utf-8")
-m = re.search(r"var STAMPS = \[([\s\S]*?)\];", text)
-assert m, "STAMPS array not found"
-items = ast.literal_eval("[" + m.group(1).strip() + "]")
-assert len(items) == 500, f"expected 500 stamps, got {len(items)}"
-assert len(set(items)) == 500, "duplicate stamp strings"
+data = json.loads(Path("$JSON").read_text(encoding="utf-8"))
+tabs = data.get("tabs")
+assert isinstance(tabs, list) and len(tabs) >= 9, "tabs"
+labels = {t.get("label") for t in tabs}
+assert "かお・きもち" in labels
+seen = set()
+total = 0
+for t in tabs:
+    st = t.get("stamps") or []
+    for c in st:
+        assert c not in seen, f"duplicate char in json: {c!r}"
+        seen.add(c)
+        total += 1
+assert total >= 4000, f"expected full emoji set (~5k), got {total}"
 PY
 
 echo "OK: oekaki-hiroba.html checks passed"
